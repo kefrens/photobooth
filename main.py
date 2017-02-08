@@ -7,6 +7,9 @@ from kivy.config import Config
 # Settings
 # ----------------------------------------------------------------------
 
+# Debug level - This is used by Logger. Level can be critical, error, warning, info debug, notset
+debuglvl = "debug"
+
 # Folder where all full-res captures from camera goes
 #captureFilePath = "/media/odroid/B5BD-FED7/photobooth/captures/"
 captureFilePath = "captures/"
@@ -124,13 +127,16 @@ class EState:
 # ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
 class CaptureApp(App):
-	    
+	
+	touch = None
 	keyboard = None
 	camera = None
 	whiteBillboard = None
 	previewImage = None
 	slotImages = None
 	state = EState.LOADING
+	Logger.setLevel() == debuglvl
+	Logger.debug('State is %estate') #Add default loading state
 	latestCapturedPicture = None
 	mutex = Lock()
 	keyState = EKeyState.RELEASED
@@ -242,7 +248,7 @@ class CaptureApp(App):
 		Cache.print_usage()
 		
 		if keycode[0] == 32:
-			
+			Logging.info('INPUT: Keyboard input detected')
 			self.userEvent()
 				
 		pass		
@@ -254,7 +260,7 @@ class CaptureApp(App):
 	# User event, performs state transitions based on the current state
 	# ------------------------------------------------------------------
 	def userEvent(self):
-				
+		Logging.debug('UserEvent Received. Current State is %estate') # Adding logging to current state		
 		self.mutex.acquire()
 		
 		# check if we can connect to the camera
@@ -268,6 +274,7 @@ class CaptureApp(App):
 		if self.state == EState.PREVIEW:
 			self.mutex.release()
 			self.runCounter()
+			Logging.debug('Transitioning to runCounter method')
 		
 		elif self.state == EState.INSPECTION:
 			self.mutex.release()
@@ -409,6 +416,7 @@ class CaptureApp(App):
 			self.mutex.acquire()
 			
 			self.state = EState.PREVIEW
+			Logger.info('State is %estate') # Added logging transitition to PREVIEW
 			self.previewImage.show()
 			self.previewImage.enablePreview()
 			Clock.schedule_interval(lambda dt: _updatePreview(), 1.0 / 20.0)
@@ -433,7 +441,8 @@ class CaptureApp(App):
 	def preloadSlots(self):
 		
 		
-		self.state = EState.LOADING		
+		self.state = EState.LOADING
+		Logger.info('State is %estate') #Add default loading state
 		self.startPreview()
 		Clock.schedule_once(lambda dt: self.slotImages.preloadSlots(), 1.0)
 		
