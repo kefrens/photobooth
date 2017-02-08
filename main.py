@@ -8,7 +8,7 @@ from kivy.config import Config
 # ----------------------------------------------------------------------
 
 # Debug level - This is used by Logger. Level can be critical, error, warning, info debug, notset
-debuglvl = "debug"
+debuglvl = "INFO"
 
 # Folder where all full-res captures from camera goes
 #captureFilePath = "/media/odroid/B5BD-FED7/photobooth/captures/"
@@ -46,6 +46,8 @@ Config.set('graphics', 'fbo', 'hardware')
 Config.set('graphics', 'fullscreen', '1')
 Config.set('graphics', 'show_cursor', 0)
 Config.set('graphics', 'borderless', '1')
+
+# global values
 
 
 # ----------------------------------------------------------------------
@@ -135,8 +137,9 @@ class CaptureApp(App):
 	previewImage = None
 	slotImages = None
 	state = EState.LOADING
-	Logger.setLevel() == debuglvl
-	Logger.debug('State is %estate') #Add default loading state
+	Logger.setLevel(debuglvl)
+	Logger.info('Debug Mode is %s', debuglvl)
+	Logger.info('State is %s', state) #Add default loading state
 	latestCapturedPicture = None
 	mutex = Lock()
 	keyState = EKeyState.RELEASED
@@ -250,17 +253,21 @@ class CaptureApp(App):
 		if keycode[0] == 32:
 			Logging.info('INPUT: Keyboard input detected')
 			self.userEvent()
+			Logging.info('Invoking userEvent')
 				
 		pass		
 		
-		
+	def on_touch_down(self, touch):
+
+			Logging.info('HANDLER: Touch received!')
+
 	# ---------------------- State Machine -----------------------------
 	
 	# ------------------------------------------------------------------
 	# User event, performs state transitions based on the current state
 	# ------------------------------------------------------------------
 	def userEvent(self):
-		Logging.debug('UserEvent Received. Current State is %estate') # Adding logging to current state		
+		Logging.info('UserEvent Received. Current State is', state) # Adding logging to current state
 		self.mutex.acquire()
 		
 		# check if we can connect to the camera
@@ -274,7 +281,7 @@ class CaptureApp(App):
 		if self.state == EState.PREVIEW:
 			self.mutex.release()
 			self.runCounter()
-			Logging.debug('Transitioning to runCounter method')
+			Logging.info('Transitioning to runCounter method')
 		
 		elif self.state == EState.INSPECTION:
 			self.mutex.release()
@@ -367,7 +374,7 @@ class CaptureApp(App):
 		self.mutex.acquire()
 				
 		self.state = EState.CAPTURING
-		
+		Logging.info('Current state is: %s', self.state)
 		# disable preview images
 		self.previewImage.disablePreview()
 							
@@ -388,6 +395,7 @@ class CaptureApp(App):
 	def runCounter(self):
 		
 		self.state = EState.COUNTER
+		Logger.info('Current state is %', self.state)
 		self.countDown(3, None, self.captureImage)		
 			
 		pass
@@ -416,7 +424,7 @@ class CaptureApp(App):
 			self.mutex.acquire()
 			
 			self.state = EState.PREVIEW
-			Logger.info('State is %estate') # Added logging transitition to PREVIEW
+			Logger.info('State is %s', self.state) # Added logging transitition to PREVIEW
 			self.previewImage.show()
 			self.previewImage.enablePreview()
 			Clock.schedule_interval(lambda dt: _updatePreview(), 1.0 / 20.0)
@@ -442,7 +450,7 @@ class CaptureApp(App):
 		
 		
 		self.state = EState.LOADING
-		Logger.info('State is %estate') #Add default loading state
+		Logger.info('State is %s', self.state) #Add default loading state
 		self.startPreview()
 		Clock.schedule_once(lambda dt: self.slotImages.preloadSlots(), 1.0)
 		

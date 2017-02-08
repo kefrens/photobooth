@@ -1,11 +1,13 @@
 import piggyphoto
 
+
 from kivy.uix.widget import Widget
 from kivy.properties import StringProperty
 from kivy.properties import NumericProperty
 from kivy.properties import ListProperty, ObjectProperty
 from kivy.core.image import Image as CoreImage
 from kivy.uix.image import Image
+from kivy.logger import Logger
 
         
 # ----------------------------------------------------------------------
@@ -23,7 +25,11 @@ class Preview(Widget):
     def __init__(self, **kwargs):
         super(Preview, self).__init__(**kwargs)
         self.alpha = 0
-        
+
+    def on_touch_down(self, touch):
+        Logger.info("TOUCH detected!")
+
+
     # ------------------------------------------------------------------
     def setCamera(self, capturePreviewFile = 'preview.jpg', camera = None):
         
